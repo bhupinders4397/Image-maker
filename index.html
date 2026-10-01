@@ -1,1 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VisionForge AI — Image to Image</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #08090d;
+      --panel: #101219;
+      --panel-2: #151720;
+      --border: #292d38;
+      --text: #f5f7fb;
+      --muted: #9298a7;
+      --purple: #7c5cff;
+      --purple-2: #9b7cff;
+      --green: #55e6a5;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, #2c225d 0%, transparent 38%),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* NAVBAR */
+
+    .navbar {
+      height: 72px;
+      padding: 0 6%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: rgba(8,9,13,.72);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #8d68ff, #5d38ef);
+      box-shadow: 0 8px 30px rgba(124,92,255,.35);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      color: #b6bac6;
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .nav-links a:hover {
+      color: white;
+    }
+
+    .nav-button {
+      border: 1px solid var(--border);
+      background: #151720;
+      color: white;
+      padding: 9px 17px;
+      border-radius: 10px;
+    }
+
+    /* HERO */
+
+    .hero {
+      max-width: 1100px;
+      margin: auto;
+      padding: 80px 20px 35px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 13px;
+      border: 1px solid #38304f;
+      border-radius: 999px;
+      color: #cfc5ff;
+      background: rgba(124,92,255,.09);
+      font-size: 13px;
+      margin-bottom: 22px;
+    }
+
+    .badge span {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: .98;
+      letter-spacing: -4px;
+      margin-bottom: 22px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #fff, #a88fff, #7c5cff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      max-width: 670px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* APP */
+
+    .app {
+      width: min(1100px, calc(100% - 30px));
+      margin: 35px auto 90px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(16,18,25,.92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.22);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .card-title h2 {
+      font-size: 16px;
+    }
+
+    .card-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* UPLOAD */
+
+    .upload-area {
+      min-height: 310px;
+      border: 1.5px dashed #3a3f4d;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 30px;
+      text-align: center;
+      transition: .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:hover,
+    .upload-area.dragging {
+      border-color: var(--purple);
+      background: rgba(124,92,255,.06);
+    }
+
+    .upload-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      background: #1b1e29;
+      display: grid;
+      place-items: center;
+      font-size: 27px;
+      margin-bottom: 17px;
+    }
+
+    .upload-area h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .upload-area p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      max-width: 350px;
+    }
+
+    .upload-btn {
+      margin-top: 18px;
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 18px;
+      color: white;
+      background: linear-gradient(135deg, #7c5cff, #5f40df);
+      font-weight: 600;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .preview-grid {
+      position: absolute;
+      inset: 10px;
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .preview-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #090a0e;
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 25px;
+      height: 25px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,.7);
+      color: white;
+    }
+
+    /* FORM */
+
+    .field {
+      margin-bottom: 19px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #dce0e9;
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      color: white;
+      background: #0b0d12;
+      border-radius: 11px;
+    }
+
+    textarea {
+      min-height: 125px;
+      resize: vertical;
+      padding: 13px;
+      line-height: 1.6;
+    }
+
+    textarea:focus,
+    select:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(124,92,255,.1);
+    }
+
+    select {
+      padding: 12px;
+    }
+
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .ratio-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+
+    .ratio-btn {
+      padding: 10px 4px;
+      color: #aaaeba;
+      background: #0b0d12;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 12px;
+    }
+
+    .ratio-btn.active {
+      color: white;
+      border-color: var(--purple);
+      background: rgba(124,92,255,.13);
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 5px;
+      border: 0;
+      border-radius: 11px;
+      color: white;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8a69ff, #633ee9);
+      box-shadow: 0 10px 30px rgba(124,92,255,.25);
+      transition: .2s;
+    }
+
+    .generate-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 40px rgba(124,92,255,.35);
+    }
+
+    .generate-btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* RESULTS */
+
+    .results {
+      width: min(1100px, calc(100% - 30px));
+      margin: 0 auto 90px;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .results-header h2 {
+      font-size: 25px;
+    }
+
+    .results-header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .result-card {
+      background: #101219;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .result-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background:
+        linear-gradient(135deg,#171928,#25203d);
+      display: grid;
+      place-items: center;
+      color: #777d8d;
+    }
+
+    .result-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .result-footer {
+      padding: 10px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .download-btn {
+      border: 1px solid var(--border);
+      background: #171922;
+      color: white;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+
+    /* LOADING */
+
+    .loader {
+      display: none;
+      margin: 14px auto 0;
+      width: 25px;
+      height: 25px;
+      border: 3px solid #333743;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* FEATURES */
+
+    .features {
+      max-width: 1100px;
+      margin: 0 auto 100px;
+      padding: 0 15px;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 34px;
+      margin-bottom: 40px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .feature {
+      background: #101219;
+      border: 1px solid var(--border);
+      padding: 24px;
+      border-radius: 15px;
+    }
+
+    .feature-icon {
+      font-size: 25px;
+      margin-bottom: 17px;
+    }
+
+    .feature h3 {
+      font-size: 16px;
+      margin-bottom: 9px;
+    }
+
+    .feature p {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    footer {
+      text-align: center;
+      color: #666b78;
+      font-size: 13px;
+      padding: 30px;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+
+    @media (max-width: 800px) {
+      .nav-links {
+        display: none;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">✦</div>
+      VisionForge
+    </div>
+
+    <div class="nav-links">
+      <a href="#generator">Image to Image</a>
+      <a href="#features">Features</a>
+      <a href="#results">Gallery</a>
+    </div>
+
+    <button class="nav-button">Get Started</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge">
+      <span></span>
+      AI Image Transformation
+    </div>
+
+    <h1>
+      Transform Images<br>
+      <span class="gradient-text">With AI</span>
+    </h1>
+
+    <p>
+      Upload your reference image, describe your idea,
+      and create a completely new visual while keeping
+      the important details of your original image.
+    </p>
+  </section>
+
+  <!-- GENERATOR -->
+  <main id="generator" class="app">
+
+    <!-- LEFT -->
+    <section class="card">
+
+      <div class="card-title">
+        <h2>Reference Images</h2>
+        <span>Up to 3 images</span>
+      </div>
+
+      <div id="uploadArea" class="upload-area">
+
+        <div id="uploadContent">
+          <div class="upload-icon">↥</div>
+
+          <h3>Drop your images here</h3>
+
+          <p>
+            Upload JPG, PNG or WebP images.
+            You can use one or multiple images as references.
+          </p>
+
+          <button
+            type="button"
+            class="upload-btn"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            Choose Images
+          </button>
+        </div>
+
+        <div id="previewGrid" class="preview-grid"></div>
+
+      </div>
+
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        multiple
+      />
+
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+
+      <div class="card-title">
+        <h2>Describe Your Creation</h2>
+        <span>AI Prompt</span>
+      </div>
+
+      <div class="field">
+        <label for="prompt">Prompt</label>
+
+        <textarea
+          id="prompt"
+          placeholder="Example: Transform this photo into a cinematic luxury fashion campaign, golden-hour lighting, premium studio photography..."
+        ></textarea>
+      </div>
+
+      <div class="settings-row">
+
+        <div class="field">
+          <label>Model</label>
+
+          <select id="model">
+            <option>Vision AI Pro</option>
+            <option>Vision AI Fast</option>
+            <option>Creative Studio</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Output Count</label>
+
+          <select id="count">
+            <option value="1">1 Image</option>
+            <option value="2">2 Images</option>
+            <option value="4">4 Images</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="field">
+
+        <label>Aspect Ratio</label>
+
+        <div class="ratio-buttons">
+
+          <button class="ratio-btn active" data-ratio="1:1">
+            1:1
+          </button>
+
+          <button class="ratio-btn" data-ratio="16:9">
+            16:9
+          </button>
+
+          <button class="ratio-btn" data-ratio="9:16">
+            9:16
+          </button>
+
+          <button class="ratio-btn" data-ratio="4:3">
+            4:3
+          </button>
+
+        </div>
+
+      </div>
+
+      <button
+        id="generateBtn"
+        class="generate-btn"
+      >
+        ✦ Generate Images
+      </button>
+
+      <div id="loader" class="loader"></div>
+
+    </section>
+
+  </main>
+
+  <!-- RESULTS -->
+  <section id="results" class="results">
+
+    <div class="results-header">
+
+      <div>
+        <h2>Your Results</h2>
+        <p>Generated images will appear here.</p>
+      </div>
+
+    </div>
+
+    <div id="resultGrid" class="result-grid">
+
+      <div class="result-card">
+        <div class="result-image">
+          Your generated image
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="result-image">
+          Your generated image
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="features">
+
+    <h2>Everything You Need to Create</h2>
+
+    <div class="feature-grid">
+
+      <div class="feature">
+        <div class="feature-icon">🖼️</div>
+        <h3>Multi-Image References</h3>
+        <p>
+          Combine multiple reference images to guide
+          your AI generation and create more complex visuals.
+        </p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">✨</div>
+        <h3>Prompt-Based Editing</h3>
+        <p>
+          Tell the AI exactly what you want to change,
+          from backgrounds and clothing to lighting and style.
+        </p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Fast Generation</h3>
+        <p>
+          Connect this interface to your preferred
+          image-generation API and deliver results quickly.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <footer>
+    © 2026 VisionForge AI. All rights reserved.
+  </footer>
+
+
+  <script>
+
+    const fileInput = document.getElementById("fileInput");
+    const uploadArea = document.getElementById("uploadArea");
+    const uploadContent = document.getElementById("uploadContent");
+    const previewGrid = document.getElementById("previewGrid");
+
+    const generateBtn = document.getElementById("generateBtn");
+    const loader = document.getElementById("loader");
+    const resultGrid = document.getElementById("resultGrid");
+
+    let selectedFiles = [];
+    let selectedRatio = "1:1";
+
+
+    /* -------------------------
+       FILE UPLOAD
+    ------------------------- */
+
+    fileInput.addEventListener("change", function () {
+      handleFiles([...this.files]);
+    });
+
+
+    uploadArea.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      uploadArea.classList.add("dragging");
+    });
+
+
+    uploadArea.addEventListener("dragleave", function () {
+      uploadArea.classList.remove("dragging");
+    });
+
+
+    uploadArea.addEventListener("drop", function (e) {
+      e.preventDefault();
+
+      uploadArea.classList.remove("dragging");
+
+      handleFiles([...e.dataTransfer.files]);
+    });
+
+
+    function handleFiles(files) {
+
+      const images = files.filter(file =>
+        file.type.startsWith("image/")
+      );
+
+      selectedFiles = images.slice(0, 3);
+
+      renderPreviews();
+    }
+
+
+    function renderPreviews() {
+
+      if (!selectedFiles.length) {
+
+        uploadContent.style.display = "flex";
+        previewGrid.style.display = "none";
+
+        return;
+      }
+
+      uploadContent.style.display = "none";
+      previewGrid.style.display = "grid";
+
+      previewGrid.innerHTML = "";
+
+      selectedFiles.forEach((file, index) => {
+
+        const url = URL.createObjectURL(file);
+
+        const item = document.createElement("div");
+
+        item.className = "preview-item";
+
+        item.innerHTML = `
+          <img src="${url}" alt="Reference image">
+
+          <button
+            class="remove-image"
+            onclick="removeImage(${index})"
+          >
+            ×
+          </button>
+        `;
+
+        previewGrid.appendChild(item);
+
+      });
+
+    }
+
+
+    function removeImage(index) {
+
+      selectedFiles.splice(index, 1);
+
+      renderPreviews();
+    }
+
+
+    /* -------------------------
+       ASPECT RATIO
+    ------------------------- */
+
+    document.querySelectorAll(".ratio-btn").forEach(button => {
+
+      button.addEventListener("click", function () {
+
+        document
+          .querySelectorAll(".ratio-btn")
+          .forEach(btn => btn.classList.remove("active"));
+
+        this.classList.add("active");
+
+        selectedRatio = this.dataset.ratio;
+
+      });
+
+    });
+
+
+    /* -------------------------
+       GENERATE
+    ------------------------- */
+
+    generateBtn.addEventListener("click", async function () {
+
+      const prompt =
+        document.getElementById("prompt").value.trim();
+
+      const count =
+        Number(document.getElementById("count").value);
+
+      const model =
+        document.getElementById("model").value;
+
+
+      if (!selectedFiles.length) {
+
+        alert("Please upload at least one reference image.");
+
+        return;
+      }
+
+
+      if (!prompt) {
+
+        alert("Please describe what you want to create.");
+
+        return;
+      }
+
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Generating...";
+      loader.style.display = "block";
+
+
+      /*
+        IMPORTANT:
+
+        Replace this demo timeout with your real
+        backend/API request.
+
+        Example:
+
+        const formData = new FormData();
+
+        selectedFiles.forEach(file => {
+          formData.append("images", file);
+        });
+
+        formData.append("prompt", prompt);
+        formData.append("model", model);
+        formData.append("ratio", selectedRatio);
+        formData.append("count", count);
+
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        renderResults(data.images);
+      */
+
+
+      setTimeout(() => {
+
+        generateDemoResults(count);
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = "✦ Generate Images";
+        loader.style.display = "none";
+
+      }, 1800);
+
+    });
+
+
+    /* -------------------------
+       DEMO RESULTS
+    ------------------------- */
+
+    function generateDemoResults(count) {
+
+      resultGrid.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+
+        const card = document.createElement("div");
+
+        card.className = "result-card";
+
+        card.innerHTML = `
+
+          <div
+            class="result-image"
+            style="
+              aspect-ratio:${getAspectRatio()};
+              background:
+              linear-gradient(
+                135deg,
+                hsl(${250 + i * 25},70%,25%),
+                hsl(${280 + i * 20},70%,45%)
+              );
+            "
+          >
+            <div style="
+              text-align:center;
+              padding:30px;
+            ">
+              <div style="
+                font-size:35px;
+                margin-bottom:10px;
+              ">✦</div>
+
+              <div>
+                Demo AI Result ${i + 1}
+              </div>
+
+              <small style="
+                color:#a4a8b5;
+                display:block;
+                margin-top:5px;
+              ">
+                Connect your AI API
+              </small>
+            </div>
+          </div>
+
+          <div class="result-footer">
+
+            <button
+              class="download-btn"
+              onclick="downloadDemo()"
+            >
+              ↓ Download
+            </button>
+
+          </div>
+        `;
+
+        resultGrid.appendChild(card);
+
+      }
+
+    }
+
+
+    function getAspectRatio() {
+
+      const ratios = {
+        "1:1": "1 / 1",
+        "16:9": "16 / 9",
+        "9:16": "9 / 16",
+        "4:3": "4 / 3"
+      };
+
+      return ratios[selectedRatio];
+
+    }
+
+
+    function downloadDemo() {
+
+      alert(
+        "Connect your backend/API to enable real image downloads."
+      );
+
+    }
+
+  </script>
+
+</body>
+</html>
